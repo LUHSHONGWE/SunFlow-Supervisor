@@ -3,96 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SunFlow Supervisor | PV-Battery Dashboard</title>
+  <title>SunFlow Supervisor</title>
   <style>
     :root {
-      --bg-dark: #0f171e;
-      --card-bg: #1a242f;
-      --solar-yellow: #ffb703;
-      --battery-green: #2a9d8f;
-      --load-blue: #0077b6;
-      --alert-red: #e63946;
-      --text-main: #e0e1dd;
-      --text-muted: #8d99ae;
-      --cc-color: #f4a261;
-      --cv-color: #2a9d8f;
+      --bg-dark: #0f171e; --card-bg: #1a242f; --solar-yellow: #ffb703;
+      --battery-green: #2a9d8f; --load-blue: #0077b6; --alert-red: #e63946;
+      --text-main: #e0e1dd; --text-muted: #8d99ae;
     }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
+    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
     .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: var(--solar-yellow); margin: 0; font-size: 28px; letter-spacing: 1px; }
-    .header p { color: var(--text-muted); margin: 5px 0; font-size: 14px; }
-
-    #connection-status {
-      padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; text-align: center; transition: all 0.3s ease;
-    }
+    .header h1 { color: var(--solar-yellow); margin: 0; font-size: 28px; }
+    #connection-status { padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; text-align: center; }
     .searching { background: #f4a261; color: #000; }
     .connected { background: var(--battery-green); color: #fff; }
     .disconnected { background: var(--alert-red); color: #fff; }
-
-    .dashboard-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px;
-    }
-
-    .card {
-      background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-top: 4px solid var(--text-muted); position: relative;
-    }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-top: 4px solid var(--text-muted); }
     .card.solar { border-top-color: var(--solar-yellow); }
     .card.battery { border-top-color: var(--battery-green); }
     .card.load { border-top-color: var(--load-blue); }
-    .card.recommend { border-top-color: #9d4edd; }
-
-    .card-title {
-      font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 15px; display: flex; justify-content: space-between;
-    }
-
-    .metric-row {
-      display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;
-    }
-    .metric-row:last-child { border-bottom: none; margin-bottom: 0; }
-    .metric-value { font-weight: bold; font-family: 'Courier New', Courier, monospace; }
-    
-    .value-large { font-size: 28px; font-weight: bold; text-align: center; margin: 10px 0; font-family: 'Courier New', Courier, monospace; }
-
-    .mode-badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; display: inline-block; }
-    .mode-normal { background: rgba(42, 157, 143, 0.2); color: var(--battery-green); border: 1px solid var(--battery-green); }
-    .mode-excess { background: rgba(255, 183, 3, 0.2); color: var(--solar-yellow); border: 1px solid var(--solar-yellow); }
-    .badge-cc { background: rgba(244, 162, 97, 0.2); color: var(--cc-color); border: 1px solid var(--cc-color); }
-    .badge-cv { background: rgba(42, 157, 143, 0.2); color: var(--cv-color); border: 1px solid var(--cv-color); }
-
-    .recommendation-box {
-      background: rgba(157, 78, 221, 0.1); border: 1px dashed #9d4edd; padding: 15px; border-radius: 8px; font-size: 14px; color: #e0aaff; text-align: center; font-weight: bold;
-    }
-
-    /* Login Screen */
+    .card.mode { border-top-color: #9d4edd; }
+    .card-title { font-size: 14px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; }
+    .metric-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+    .metric-value { font-weight: bold; font-family: 'Courier New', monospace; }
+    .value-large { font-size: 28px; font-weight: bold; text-align: center; margin: 10px 0; font-family: 'Courier New', monospace; }
     #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
-    input[type="password"] {
-      padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid var(--text-muted); background: var(--card-bg); color: white; text-align: center; margin-bottom: 15px; width: 200px;
-    }
+    input[type="password"] { padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid var(--text-muted); background: var(--card-bg); color: white; text-align: center; margin-bottom: 15px; width: 200px; }
     .control-btn { background: var(--load-blue); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
-    .control-btn:hover { background: #005f92; }
     .control-btn:disabled { background: var(--alert-red); cursor: not-allowed; }
-
-    /* Logs */
-    #log {
-      width: 100%; max-width: 1000px; background: #000; color: var(--battery-green); font-family: monospace; padding: 15px; border-radius: 8px; margin-top: 20px; height: 120px; overflow-y: auto; font-size: 12px; box-sizing: border-box;
-    }
+    #log { width: 100%; max-width: 1000px; background: #000; color: var(--battery-green); font-family: monospace; padding: 15px; border-radius: 8px; margin-top: 20px; height: 120px; overflow-y: auto; font-size: 12px; box-sizing: border-box; }
     .log-alert { color: var(--alert-red); font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <h1 style="color: var(--solar-yellow);">🌞 SunFlow Supervisor</h1>
     <p style="color: var(--text-muted);">Enter PIN to access PV Dashboard</p>
@@ -101,102 +45,46 @@
     <div id="login-message" style="color: var(--alert-red); margin-top: 15px; font-weight: bold; text-align: center;"></div>
   </div>
 
-  <!-- MAIN DASHBOARD -->
   <div id="dashboard" style="display: none; width: 100%; max-width: 1000px;">
-    
     <div class="header">
       <h1>🌞 SunFlow Supervisor</h1>
-      <p>Maximizing PV Utilisation & Battery Health</p>
     </div>
-
     <div id="connection-status" class="searching">🔍 Searching for ESP32...</div>
 
     <div class="dashboard-grid">
-      
-      <!-- Solar PV Card -->
       <div class="card solar">
         <div class="card-title">☀️ Solar PV Array</div>
         <div class="value-large" id="solar-voltage">0.0 V</div>
-        <div class="metric-row"><span>Status:</span><span class="metric-value" style="color: var(--solar-yellow);">Active Input</span></div>
       </div>
-
-      <!-- Battery Card -->
       <div class="card battery">
-        <div class="card-title">
-          🔋 Battery & Charging
-          <span id="charge-mode-badge" class="mode-badge badge-cc">CC MODE</span>
-        </div>
+        <div class="card-title">🔋 Battery Telemetry</div>
         <div class="value-large" id="charge-power">0.0 W</div>
         <div class="metric-row"><span>Voltage:</span><span class="metric-value" id="bat-voltage">0.0 V</span></div>
-        <div class="metric-row"><span>Charge Current:</span><span class="metric-value" id="charge-current">0.0 A</span></div>
+        <div class="metric-row"><span>Current:</span><span class="metric-value" id="charge-current">0.0 A</span></div>
+        <div class="metric-row"><span>Temperature:</span><span class="metric-value" id="bat-temp">0.0 °C</span></div>
       </div>
-
-      <!-- Main Load Card -->
       <div class="card load">
         <div class="card-title">⚡ Main Load (12V)</div>
         <div class="value-large" id="load-power">0.0 W</div>
-        <div class="metric-row"><span>Voltage:</span><span class="metric-value" id="load-voltage">12.0 V</span></div>
         <div class="metric-row"><span>Current:</span><span class="metric-value" id="load-current">0.0 A</span></div>
       </div>
-
-      <!-- System Mode Card -->
-      <div class="card">
-        <div class="card-title">⚙️ System Utilisation</div>
-        <div style="margin-bottom: 15px;">
-          <span id="system-mode" class="mode-badge mode-normal">NORMAL MODE</span>
-        </div>
-        <div class="metric-row"><span>Total Power:</span><span class="metric-value" id="total-power">0.0 W</span></div>
-        <div class="metric-row"><span>Aux Load Voltage:</span><span class="metric-value" id="aux-voltage">0.0 V</span></div>
-      </div>
-
-      <!-- Recommendation Box -->
-      <div class="card recommend" style="grid-column: 1 / -1;">
-        <div class="card-title">💡 Supervisory Recommendation</div>
-        <div class="recommendation-box" id="recommendation">System initializing...</div>
+      <div class="card mode">
+        <div class="card-title">⚙️ System Status</div>
+        <div class="value-large" id="sys-mode" style="color: var(--solar-yellow);">--</div>
+        <div class="metric-row"><span>Recommendation:</span><span class="metric-value" id="rec-text">--</span></div>
       </div>
     </div>
 
-    <!-- System Log -->
-    <div id="log">
-      <div>[SYSTEM] Dashboard Initialized.</div>
-    </div>
+    <div id="log"><div>[SYSTEM] Waiting for connection...</div></div>
   </div>
 
   <script>
-    // --- SECURITY & CONFIGURATION ---
     const correctPIN = "1234";
-    let failedAttempts = 0;
-    let lockoutTime = 0;
-    
-    // --- SYSTEM STATE ---
-    let esp32IP = null;
-    let refreshInterval = null;
+    let failedAttempts = 0, lockoutTime = 0;
+    let esp32IP = null, refreshInterval = null;
 
-    // Simulated Data
-    let simData = {
-      solar_v: 18.5, 
-      charge_a: 1.5, charge_w: 24.7, // CC mode initially
-      bat_v: 16.4, 
-      load_v: 12.0, load_a: 0.5, load_w: 6.0,
-      aux_v: 0.0,
-      mode: "NORMAL",
-      recommendation: "Battery charging in CC mode. Keep MPPT setting."
-    };
-
-    // --- LOGGING FUNCTION ---
-    function logMessage(msg, isAlert = false) {
-      const logDiv = document.getElementById("log");
-      const time = new Date().toLocaleTimeString();
-      const cssClass = isAlert ? "log-alert" : "";
-      logDiv.innerHTML += `<div class="${cssClass}">[${time}] ${msg}</div>`;
-      logDiv.scrollTop = logDiv.scrollHeight;
-    }
-
-    // --- LOGIN SECURITY LOGIC ---
     function validatePIN() {
       const now = Date.now();
-      
-      // Check if currently locked out
       if (now < lockoutTime) {
         const remaining = Math.ceil((lockoutTime - now) / 1000);
         document.getElementById("login-message").innerText = `🚨 LOCKED OUT. Try again in ${remaining}s.`;
@@ -208,18 +96,14 @@
       if (input === correctPIN) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        logMessage("✅ Access Granted. User authenticated.");
-        initializeConnection();
+        discoverESP32();
       } else {
         failedAttempts++;
-        logMessage(`🚨 Security Alert: Wrong PIN attempted (Attempt ${failedAttempts}/3)`, true);
-        
+        logMessage(`🚨 Security Alert: Wrong PIN attempted (${failedAttempts}/3)`, true);
         if (failedAttempts >= 3) {
-          lockoutTime = Date.now() + 30000; // 30 second lockout
+          lockoutTime = Date.now() + 30000;
           document.getElementById("pin-input").disabled = true;
           document.getElementById("login-btn").disabled = true;
-          logMessage("🔒 SYSTEM LOCKED: 3 failed attempts. 30s timeout.", true);
-          
           const countdown = setInterval(() => {
             const timeLeft = Math.ceil((lockoutTime - Date.now()) / 1000);
             if (timeLeft <= 0) {
@@ -228,7 +112,6 @@
               document.getElementById("login-btn").disabled = false;
               document.getElementById("login-message").innerText = "";
               failedAttempts = 0;
-              logMessage("🔓 Lockout expired. System unlocked.");
             } else {
               document.getElementById("login-message").innerText = `🚨 LOCKED OUT. Try again in ${timeLeft}s.`;
             }
@@ -239,38 +122,44 @@
       }
     }
 
-    // --- CONNECTION LOGIC ---
-    function initializeConnection() {
-      esp32IP = localStorage.getItem('esp32_ip');
-      if (!esp32IP) {
-        discoverESP32();
-      } else {
-        updateConnectionStatus("connected", `✅ Connected to ${esp32IP}`);
-        startAutoRefresh();
-      }
+    function logMessage(msg, isAlert = false) {
+      const logDiv = document.getElementById("log");
+      const time = new Date().toLocaleTimeString();
+      const cssClass = isAlert ? "log-alert" : "";
+      logDiv.innerHTML += `<div class="${cssClass}">[${time}] ${msg}</div>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
     }
 
+    // *** SCANS IPHONE HOTSPOT IPS FIRST ***
     async function discoverESP32() {
-      const commonIPs = ["192.168.1.100", "192.168.0.100", "172.20.10.2"];
-      updateConnectionStatus("searching", "🔍 Searching for ESP32...");
-      logMessage("Scanning local network for ESP32...");
-
+      const commonIPs = [
+        "172.20.10.2", // Most common iPhone Hotspot IP for connected devices
+        "172.20.10.3", 
+        "172.20.10.4",
+        "192.168.4.1", 
+        "192.168.1.100" 
+      ];
+      
+      document.getElementById("connection-status").innerText = "🔍 Searching for ESP32...";
+      document.getElementById("connection-status").className = "searching";
+      
       for (const ip of commonIPs) {
         try {
           const response = await fetch(`http://${ip}/data`, { signal: AbortSignal.timeout(1500) });
           if (response.ok) {
             esp32IP = ip;
-            localStorage.setItem('esp32_ip', ip);
-            updateConnectionStatus("connected", `✅ Connected to ${ip}`);
+            document.getElementById("connection-status").innerText = `✅ Connected to ${ip}`;
+            document.getElementById("connection-status").className = "connected";
             logMessage(`Connected to ESP32 at ${ip}`);
             startAutoRefresh();
             return;
           }
         } catch (e) {}
       }
-      updateConnectionStatus("disconnected", "❌ ESP32 not found. SIMULATION MODE.");
-      logMessage("⚠️ ESP32 offline. Loading simulated telemetry.", true);
-      startSimulation();
+      
+      document.getElementById("connection-status").innerText = "❌ ESP32 not found (Check Mixed Content Settings)";
+      document.getElementById("connection-status").className = "disconnected";
+      logMessage("Connection failed. Ensure ESP32 is ON and Mixed Content is allowed.", true);
     }
 
     function startAutoRefresh() {
@@ -282,112 +171,31 @@
       if (!esp32IP) return;
       try {
         const response = await fetch(`http://${esp32IP}/data`);
-        const data = await response.json();
-        updateDashboard(data);
+        const d = await response.json();
+        
+        // Update Dashboard UI safely
+        document.getElementById("solar-voltage").innerText = `${(d.solar_v || 0).toFixed(2)} V`;
+        document.getElementById("bat-voltage").innerText = `${(d.bat_v || 0).toFixed(2)} V`;
+        document.getElementById("charge-current").innerText = `${(d.charge_a || 0).toFixed(2)} A`;
+        document.getElementById("charge-power").innerText = `${(d.charge_w || 0).toFixed(1)} W`;
+        document.getElementById("bat-temp").innerText = `${(d.bat_temp || 0).toFixed(1)} °C`;
+        document.getElementById("load-current").innerText = `${(d.load_a || 0).toFixed(2)} A`;
+        document.getElementById("load-power").innerText = `${(d.load_w || 0).toFixed(1)} W`;
+        
+        document.getElementById("sys-mode").innerText = d.mode || "UNKNOWN";
+        document.getElementById("rec-text").innerText = d.recommendation || "No data";
+        
       } catch (error) {
-        logMessage("❌ Connection lost. Scanning again...", true);
-        localStorage.removeItem('esp32_ip');
-        esp32IP = null;
+        logMessage("❌ Connection lost.", true);
+        document.getElementById("connection-status").innerText = "❌ Disconnected";
+        document.getElementById("connection-status").className = "disconnected";
         clearInterval(refreshInterval);
-        discoverESP32();
+        setTimeout(discoverESP32, 5000); // Try to reconnect
       }
     }
 
-    // --- SIMULATION LOGIC (For testing without hardware) ---
-    function startSimulation() {
-      if (refreshInterval) clearInterval(refreshInterval);
-      refreshInterval = setInterval(() => {
-        // Fluctuate Solar
-        simData.solar_v = 18.0 + (Math.random() * 2);
-        
-        // Battery Charging Logic Simulation
-        simData.bat_v = Math.min(16.8, simData.bat_v + 0.02); // Slowly charge up
-        
-        if (simData.bat_v > 16.5) {
-          // CV Mode (Voltage high, current drops)
-          simData.charge_a = Math.max(0.1, simData.charge_a - 0.05);
-          document.getElementById("charge-mode-badge").innerText = "CV MODE";
-          document.getElementById("charge-mode-badge").className = "mode-badge badge-cv";
-        } else {
-          // CC Mode (Current steady)
-          simData.charge_a = 1.5;
-          document.getElementById("charge-mode-badge").innerText = "CC MODE";
-          document.getElementById("charge-mode-badge").className = "mode-badge badge-cc";
-        }
-
-        simData.charge_w = simData.bat_v * simData.charge_a;
-        
-        // Main Load (Constant 12V buck)
-        simData.load_a = 0.4 + (Math.random() * 0.2);
-        simData.load_w = simData.load_v * simData.load_a;
-        
-        // System Mode
-        if (simData.bat_v >= 16.5 && simData.solar_v >= 15.0) {
-          simData.mode = "EXCESS";
-          simData.aux_v = 16.5;
-          simData.recommendation = "Battery Full! Diverting excess power to Aux Load (NO).";
-        } else {
-          simData.mode = "NORMAL";
-          simData.aux_v = 0;
-          simData.recommendation = simData.bat_v > 16.3 ? "Approaching full charge. Monitor CV mode." : "Charging in CC mode. System normal.";
-        }
-
-        updateDashboard(simData);
-      }, 2000);
-    }
-
-    // --- UI UPDATE LOGIC ---
-    function updateDashboard(data) {
-      // Solar
-      document.getElementById("solar-voltage").innerText = `${parseFloat(data.solar_v || data.solarV || 0).toFixed(2)} V`;
-
-      // Battery
-      const batV = parseFloat(data.bat_v || data.batV || 0);
-      const chargeA = parseFloat(data.charge_a || data.chargeA || 0);
-      document.getElementById("bat-voltage").innerText = `${batV.toFixed(2)} V`;
-      document.getElementById("charge-current").innerText = `${chargeA.toFixed(2)} A`;
-      document.getElementById("charge-power").innerText = `${(batV * chargeA).toFixed(1)} W`;
-
-      // Charge Mode Logic (CC vs CV)
-      const modeBadge = document.getElementById("charge-mode-badge");
-      if (batV > 16.4 && chargeA < 1.0) {
-        modeBadge.innerText = "CV MODE";
-        modeBadge.className = "mode-badge badge-cv";
-      } else {
-        modeBadge.innerText = "CC MODE";
-        modeBadge.className = "mode-badge badge-cc";
-      }
-
-      // Main Load
-      const loadV = parseFloat(data.load_v || data.loadV || 12.0); // Fallback to 12V if missing
-      const loadA = parseFloat(data.load_a || data.loadA || 0);
-      document.getElementById("load-voltage").innerText = `${loadV.toFixed(2)} V`;
-      document.getElementById("load-current").innerText = `${loadA.toFixed(2)} A`;
-      document.getElementById("load-power").innerText = `${(loadV * loadA).toFixed(1)} W`;
-
-      // Aux Load & System
-      document.getElementById("aux-voltage").innerText = `${parseFloat(data.aux_v || data.auxV || 0).toFixed(2)} V`;
-      
-      const sysModeBadge = document.getElementById("system-mode");
-      if (data.mode === "EXCESS") {
-        sysModeBadge.innerText = "EXCESS POWER MODE";
-        sysModeBadge.className = "mode-badge mode-excess";
-      } else {
-        sysModeBadge.innerText = "NORMAL MODE";
-        sysModeBadge.className = "mode-badge mode-normal";
-      }
-
-      // Total Power
-      const totalW = (batV * chargeA) + (loadV * loadA);
-      document.getElementById("total-power").innerText = `${totalW.toFixed(1)} W`;
-
-      // Recommendation
-      document.getElementById("recommendation").innerText = data.recommendation || "Monitoring system...";
-    }
-
-    // Enter key for login
-    document.getElementById("pin-input").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") validatePIN();
+    document.getElementById("pin-input").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") validatePIN();
     });
   </script>
 </body>
