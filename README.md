@@ -3,9 +3,8 @@
 
 An embedded supervisory control system designed to optimize battery charging, estimate State of Charge (SOC), and maximize Photovoltaic (PV) energy utilization under varying load conditions. 
 
-<Screenshot 2026-11-19 124146.png>
 <p align="center">
-  <img src="images/dashboard.png" width="80%" alt="SunFlow Dashboard">
+  <img src="images/Screenshot 2026-11-19 124146.png" width="80%" alt="SunFlow Dashboard">
 </p>
 
 ## 📖 Project Overview
