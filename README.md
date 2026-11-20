@@ -32,6 +32,10 @@ Standard MPPT systems treat the solar panel, battery, and load as independent en
 4.  **Web Visualization:** The ESP32 hosts a local asynchronous web server, displaying live JSON data on a responsive dashboard.
 ---
 
+<p align="center">
+  <img src="images/my circuit.jpeg" width="60%" alt="Hardware Prototype">
+</p>
+
 ## ⚙️ System Architecture & Hardware Stack
 
 | Component | Specification | Role |
