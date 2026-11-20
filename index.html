@@ -1,202 +1,821 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SunFlow Supervisor</title>
+
   <style>
     :root {
-      --bg-dark: #0f171e; --card-bg: #1a242f; --solar-yellow: #ffb703;
-      --battery-green: #2a9d8f; --load-blue: #0077b6; --alert-red: #e63946;
-      --text-main: #e0e1dd; --text-muted: #8d99ae;
+      --bg-dark: #0f171e;
+      --card-bg: #1a242f;
+      --solar-yellow: #ffb703;
+      --battery-green: #2a9d8f;
+      --load-blue: #0077b6;
+      --alert-red: #e63946;
+      --text-main: #e0e1dd;
+      --text-muted: #8d99ae;
     }
-    body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-    .header { text-align: center; margin-bottom: 20px; }
-    .header h1 { color: var(--solar-yellow); margin: 0; font-size: 28px; }
-    #connection-status { padding: 8px 16px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; font-size: 14px; text-align: center; }
-    .searching { background: #f4a261; color: #000; }
-    .connected { background: var(--battery-green); color: #fff; }
-    .disconnected { background: var(--alert-red); color: #fff; }
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
-    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border-top: 4px solid var(--text-muted); }
-    .card.solar { border-top-color: var(--solar-yellow); }
-    .card.battery { border-top-color: var(--battery-green); }
-    .card.load { border-top-color: var(--load-blue); }
-    .card.mode { border-top-color: #9d4edd; }
-    .card-title { font-size: 14px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 15px; }
-    .metric-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
-    .metric-value { font-weight: bold; font-family: 'Courier New', monospace; }
-    .value-large { font-size: 28px; font-weight: bold; text-align: center; margin: 10px 0; font-family: 'Courier New', monospace; }
-    #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; }
-    input[type="password"] { padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid var(--text-muted); background: var(--card-bg); color: white; text-align: center; margin-bottom: 15px; width: 200px; }
-    .control-btn { background: var(--load-blue); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
-    .control-btn:disabled { background: var(--alert-red); cursor: not-allowed; }
-    #log { width: 100%; max-width: 1000px; background: #000; color: var(--battery-green); font-family: monospace; padding: 15px; border-radius: 8px; margin-top: 20px; height: 120px; overflow-y: auto; font-size: 12px; box-sizing: border-box; }
-    .log-alert { color: var(--alert-red); font-weight: bold; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      color: var(--solar-yellow);
+      margin: 0;
+      font-size: 28px;
+    }
+
+    #connection-status {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .searching {
+      background: #f4a261;
+      color: #000;
+    }
+
+    .connected {
+      background: var(--battery-green);
+      color: #fff;
+    }
+
+    .disconnected {
+      background: var(--alert-red);
+      color: #fff;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      border-top: 4px solid var(--text-muted);
+    }
+
+    .card.solar {
+      border-top-color: var(--solar-yellow);
+    }
+
+    .card.battery {
+      border-top-color: var(--battery-green);
+    }
+
+    .card.load {
+      border-top-color: var(--load-blue);
+    }
+
+    .card.mode {
+      border-top-color: #9d4edd;
+    }
+
+    .card-title {
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 15px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 5px;
+      gap: 10px;
+    }
+
+    .metric-value {
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      text-align: right;
+    }
+
+    .value-large {
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 60vh;
+    }
+
+    input[type="password"] {
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 8px;
+      border: 1px solid var(--text-muted);
+      background: var(--card-bg);
+      color: white;
+      text-align: center;
+      margin-bottom: 15px;
+      width: 200px;
+    }
+
+    .control-btn {
+      background: var(--load-blue);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .control-btn:disabled {
+      background: var(--alert-red);
+      cursor: not-allowed;
+    }
+
+    #log {
+      width: 100%;
+      max-width: 1000px;
+      background: #000;
+      color: var(--battery-green);
+      font-family: monospace;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      height: 120px;
+      overflow-y: auto;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+
+    .log-alert {
+      color: var(--alert-red);
+      font-weight: bold;
+    }
   </style>
 </head>
+
 <body>
 
+  <!-- LOGIN SCREEN -->
+
   <div id="login-screen">
-    <h1 style="color: var(--solar-yellow);">🌞 SunFlow Supervisor</h1>
-    <p style="color: var(--text-muted);">Enter PIN to access PV Dashboard</p>
-    <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="4">
-    <button id="login-btn" class="control-btn" onclick="validatePIN()">🔓 Access Dashboard</button>
-    <div id="login-message" style="color: var(--alert-red); margin-top: 15px; font-weight: bold; text-align: center;"></div>
+
+    <h1 style="color: var(--solar-yellow);">
+      🌞 SunFlow Supervisor
+    </h1>
+
+    <p style="color: var(--text-muted);">
+      Enter PIN to access PV Dashboard
+    </p>
+
+    <input
+      type="password"
+      id="pin-input"
+      placeholder="Enter PIN"
+      maxlength="4"
+    >
+
+    <button
+      id="login-btn"
+      class="control-btn"
+      onclick="validatePIN()"
+    >
+      🔓 Access Dashboard
+    </button>
+
+    <div
+      id="login-message"
+      style="color: var(--alert-red); margin-top: 15px; font-weight: bold; text-align: center;"
+    ></div>
+
   </div>
 
-  <div id="dashboard" style="display: none; width: 100%; max-width: 1000px;">
+
+  <!-- MAIN DASHBOARD -->
+
+  <div
+    id="dashboard"
+    style="display: none; width: 100%; max-width: 1000px;"
+  >
+
     <div class="header">
       <h1>🌞 SunFlow Supervisor</h1>
     </div>
-    <div id="connection-status" class="searching">🔍 Searching for ESP32...</div>
 
-    <div class="dashboard-grid">
-      <div class="card solar">
-        <div class="card-title">☀️ Solar PV Array</div>
-        <div class="value-large" id="solar-voltage">0.0 V</div>
-      </div>
-      <div class="card battery">
-        <div class="card-title">🔋 Battery Telemetry</div>
-        <div class="value-large" id="charge-power">0.0 W</div>
-        <div class="metric-row"><span>Voltage:</span><span class="metric-value" id="bat-voltage">0.0 V</span></div>
-        <div class="metric-row"><span>Current:</span><span class="metric-value" id="charge-current">0.0 A</span></div>
-        <div class="metric-row"><span>Temperature:</span><span class="metric-value" id="bat-temp">0.0 °C</span></div>
-      </div>
-      <div class="card load">
-        <div class="card-title">⚡ Main Load (12V)</div>
-        <div class="value-large" id="load-power">0.0 W</div>
-        <div class="metric-row"><span>Current:</span><span class="metric-value" id="load-current">0.0 A</span></div>
-      </div>
-      <div class="card mode">
-        <div class="card-title">⚙️ System Status</div>
-        <div class="value-large" id="sys-mode" style="color: var(--solar-yellow);">--</div>
-        <div class="metric-row"><span>Recommendation:</span><span class="metric-value" id="rec-text">--</span></div>
-      </div>
+    <div id="connection-status" class="searching">
+      🔍 Connecting to ESP32...
     </div>
 
-    <div id="log"><div>[SYSTEM] Waiting for connection...</div></div>
+
+    <div class="dashboard-grid">
+
+      <!-- SOLAR CARD -->
+
+      <div class="card solar">
+
+        <div class="card-title">
+          ☀️ Solar PV Array
+        </div>
+
+        <div class="value-large" id="solar-voltage">
+          0.0 V
+        </div>
+
+        <div class="metric-row">
+          <span>Solar Current:</span>
+          <span class="metric-value" id="solar-current">
+            0.000 A
+          </span>
+        </div>
+
+        <div class="metric-row">
+          <span>Solar Input Power:</span>
+          <span class="metric-value" id="solar-power">
+            0.00 W
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- BATTERY CARD -->
+
+      <div class="card battery">
+
+        <div class="card-title">
+          🔋 Battery Telemetry
+        </div>
+
+        <div class="metric-row">
+          <span>Battery Voltage:</span>
+          <span class="metric-value" id="bat-voltage">
+            0.0 V
+          </span>
+        </div>
+
+        <div class="metric-row">
+          <span>Solar Current:</span>
+          <span class="metric-value" id="charge-current">
+            0.000 A
+          </span>
+        </div>
+
+        <div class="metric-row">
+          <span>Temperature:</span>
+          <span class="metric-value" id="bat-temp">
+            Not calibrated
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- MAIN LOAD CARD -->
+
+      <div class="card load">
+
+        <div class="card-title">
+          ⚡ Main Load
+        </div>
+
+        <div class="value-large" id="load-power">
+          0.00 W
+        </div>
+
+        <div class="metric-row">
+          <span>Voltage:</span>
+          <span class="metric-value" id="load-voltage">
+            0.0 V
+          </span>
+        </div>
+
+        <div class="metric-row">
+          <span>Current:</span>
+          <span class="metric-value" id="load-current">
+            0.000 A
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- SYSTEM STATUS CARD -->
+
+      <div class="card mode">
+
+        <div class="card-title">
+          ⚙️ System Status
+        </div>
+
+        <div class="value-large" id="sys-mode"
+          style="color: var(--solar-yellow);">
+          --
+        </div>
+
+        <div class="metric-row">
+          <span>Recommendation:</span>
+          <span class="metric-value" id="rec-text">
+            --
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- AUXILIARY RELAY CONTROL CARD (ADDED) -->
+
+      <div class="card mode">
+
+        <div class="card-title">
+          🔌 Auxiliary Relay Control
+        </div>
+
+        <div class="value-large" id="relay-state">
+          OFF
+        </div>
+
+        <div class="metric-row">
+          <span>Control mode:</span>
+          <span class="metric-value" id="relay-mode">AUTO</span>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:15px;">
+
+          <button class="control-btn"
+            onclick="controlRelay('ON')">
+            ON
+          </button>
+
+          <button class="control-btn"
+            onclick="controlRelay('OFF')">
+            OFF
+          </button>
+
+          <button class="control-btn"
+            onclick="controlRelay('AUTO')">
+            AUTO
+          </button>
+
+        </div>
+
+        <p id="relay-message"
+           style="font-size:13px; margin-top:12px;">
+          Waiting for relay status...
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- SYSTEM LOG -->
+
+    <div id="log">
+      <div>[SYSTEM] Waiting for connection...</div>
+    </div>
+
   </div>
 
+
   <script>
+
+    // ==================================================
+    // 1. SETTINGS
+    // ==================================================
+
     const correctPIN = "1234";
-    let failedAttempts = 0, lockoutTime = 0;
-    let esp32IP = null, refreshInterval = null;
+
+    const ESP32_IP = "172.20.10.2";
+
+    const ESP32_URL = `http://${ESP32_IP}/data`;
+
+    let failedAttempts = 0;
+    let lockoutTime = 0;
+
+    let refreshInterval = null;
+    let reconnectTimeout = null;
+
+
+    // ==================================================
+    // 2. LOGIN SYSTEM
+    // ==================================================
 
     function validatePIN() {
+
       const now = Date.now();
+
       if (now < lockoutTime) {
-        const remaining = Math.ceil((lockoutTime - now) / 1000);
-        document.getElementById("login-message").innerText = `🚨 LOCKED OUT. Try again in ${remaining}s.`;
+
+        const remaining =
+          Math.ceil((lockoutTime - now) / 1000);
+
+        document.getElementById("login-message").innerText =
+          `🚨 LOCKED OUT. Try again in ${remaining}s.`;
+
         return;
       }
 
-      const input = document.getElementById("pin-input").value;
-      
+      const input =
+        document.getElementById("pin-input").value;
+
       if (input === correctPIN) {
+
         document.getElementById("login-screen").style.display = "none";
+
         document.getElementById("dashboard").style.display = "block";
+
         discoverESP32();
+
       } else {
+
         failedAttempts++;
-        logMessage(`🚨 Security Alert: Wrong PIN attempted (${failedAttempts}/3)`, true);
+
+        logMessage(
+          `🚨 Security Alert: Wrong PIN attempted (${failedAttempts}/3)`,
+          true
+        );
+
         if (failedAttempts >= 3) {
+
           lockoutTime = Date.now() + 30000;
+
           document.getElementById("pin-input").disabled = true;
           document.getElementById("login-btn").disabled = true;
+
           const countdown = setInterval(() => {
-            const timeLeft = Math.ceil((lockoutTime - Date.now()) / 1000);
+
+            const timeLeft =
+              Math.ceil((lockoutTime - Date.now()) / 1000);
+
             if (timeLeft <= 0) {
+
               clearInterval(countdown);
+
               document.getElementById("pin-input").disabled = false;
               document.getElementById("login-btn").disabled = false;
+
               document.getElementById("login-message").innerText = "";
+
               failedAttempts = 0;
+
             } else {
-              document.getElementById("login-message").innerText = `🚨 LOCKED OUT. Try again in ${timeLeft}s.`;
+
+              document.getElementById("login-message").innerText =
+                `🚨 LOCKED OUT. Try again in ${timeLeft}s.`;
             }
+
           }, 1000);
+
         } else {
-          document.getElementById("login-message").innerText = `❌ Incorrect PIN. Attempts remaining: ${3 - failedAttempts}`;
+
+          document.getElementById("login-message").innerText =
+            `❌ Incorrect PIN. Attempts remaining: ${3 - failedAttempts}`;
         }
       }
     }
 
+
+    // ==================================================
+    // 3. SYSTEM LOG
+    // ==================================================
+
     function logMessage(msg, isAlert = false) {
+
       const logDiv = document.getElementById("log");
+
       const time = new Date().toLocaleTimeString();
+
       const cssClass = isAlert ? "log-alert" : "";
-      logDiv.innerHTML += `<div class="${cssClass}">[${time}] ${msg}</div>`;
+
+      logDiv.innerHTML +=
+        `<div class="${cssClass}">[${time}] ${msg}</div>`;
+
       logDiv.scrollTop = logDiv.scrollHeight;
     }
 
-    // *** SCANS IPHONE HOTSPOT IPS FIRST ***
+
+    // ==================================================
+    // 4. ESP32 CONNECTION
+    // ==================================================
+
     async function discoverESP32() {
-      const commonIPs = [
-        "172.20.10.2", // Most common iPhone Hotspot IP for connected devices
-        "172.20.10.3", 
-        "172.20.10.4",
-        "192.168.4.1", 
-        "192.168.1.100" 
-      ];
-      
-      document.getElementById("connection-status").innerText = "🔍 Searching for ESP32...";
-      document.getElementById("connection-status").className = "searching";
-      
-      for (const ip of commonIPs) {
-        try {
-          const response = await fetch(`http://${ip}/data`, { signal: AbortSignal.timeout(1500) });
-          if (response.ok) {
-            esp32IP = ip;
-            document.getElementById("connection-status").innerText = `✅ Connected to ${ip}`;
-            document.getElementById("connection-status").className = "connected";
-            logMessage(`Connected to ESP32 at ${ip}`);
-            startAutoRefresh();
-            return;
-          }
-        } catch (e) {}
+
+      const status =
+        document.getElementById("connection-status");
+
+      status.innerText = "🔍 Connecting to ESP32...";
+
+      status.className = "searching";
+
+      try {
+
+        const response = await fetch(ESP32_URL, {
+          signal: AbortSignal.timeout(3000)
+        });
+
+        if (!response.ok) {
+          throw new Error("ESP32 response error");
+        }
+
+        const data = await response.json();
+
+        if (data.connected !== true) {
+          throw new Error("ESP32 is not connected");
+        }
+
+        logMessage(`Connected to ESP32 at ${ESP32_IP}`);
+
+        startAutoRefresh();
+
+      } catch (error) {
+
+        status.innerText = "❌ ESP32 connection failed";
+
+        status.className = "disconnected";
+
+        logMessage(
+          "Connection failed. Check ESP32 power and hotspot.",
+          true
+        );
+
+        reconnectTimeout = setTimeout(discoverESP32, 5000);
       }
-      
-      document.getElementById("connection-status").innerText = "❌ ESP32 not found (Check Mixed Content Settings)";
-      document.getElementById("connection-status").className = "disconnected";
-      logMessage("Connection failed. Ensure ESP32 is ON and Mixed Content is allowed.", true);
     }
+
+
+    // ==================================================
+    // 5. AUTOMATIC DATA REFRESH
+    // ==================================================
 
     function startAutoRefresh() {
-      if (refreshInterval) clearInterval(refreshInterval);
-      refreshInterval = setInterval(fetchLiveData, 2000);
+
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+
+      fetchLiveData();
+
+      refreshInterval =
+        setInterval(fetchLiveData, 2000);
     }
 
-    async function fetchLiveData() {
-      if (!esp32IP) return;
+
+    // ==================================================
+    // 6. MANUAL RELAY CONTROL (ADDED)
+    // ==================================================
+
+    async function controlRelay(mode) {
+
+      const message =
+        document.getElementById("relay-message");
+
+      message.innerText = "Sending relay command...";
+
       try {
-        const response = await fetch(`http://${esp32IP}/data`);
-        const d = await response.json();
-        
-        // Update Dashboard UI safely
-        document.getElementById("solar-voltage").innerText = `${(d.solar_v || 0).toFixed(2)} V`;
-        document.getElementById("bat-voltage").innerText = `${(d.bat_v || 0).toFixed(2)} V`;
-        document.getElementById("charge-current").innerText = `${(d.charge_a || 0).toFixed(2)} A`;
-        document.getElementById("charge-power").innerText = `${(d.charge_w || 0).toFixed(1)} W`;
-        document.getElementById("bat-temp").innerText = `${(d.bat_temp || 0).toFixed(1)} °C`;
-        document.getElementById("load-current").innerText = `${(d.load_a || 0).toFixed(2)} A`;
-        document.getElementById("load-power").innerText = `${(d.load_w || 0).toFixed(1)} W`;
-        
-        document.getElementById("sys-mode").innerText = d.mode || "UNKNOWN";
-        document.getElementById("rec-text").innerText = d.recommendation || "No data";
-        
+
+        const response = await fetch(
+          `http://${ESP32_IP}/relay?mode=${mode}`
+        );
+
+        if (!response.ok) {
+          throw new Error("ESP32 rejected relay command");
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error("Relay command unsuccessful");
+        }
+
+        document.getElementById("relay-state").innerText =
+          result.relay_state ? "ON" : "OFF";
+
+        document.getElementById("relay-mode").innerText =
+          result.mode;
+
+        message.innerText =
+          `Command accepted: ${result.mode}`;
+
+        logMessage(`Relay manually set to ${result.mode}`);
+
       } catch (error) {
-        logMessage("❌ Connection lost.", true);
-        document.getElementById("connection-status").innerText = "❌ Disconnected";
-        document.getElementById("connection-status").className = "disconnected";
-        clearInterval(refreshInterval);
-        setTimeout(discoverESP32, 5000); // Try to reconnect
+
+        message.innerText =
+          "Failed to contact ESP32. Check Wi-Fi connection.";
+
+        console.error(error);
+
+        logMessage("Relay command failed.", true);
       }
     }
 
-    document.getElementById("pin-input").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") validatePIN();
-    });
+
+    // ==================================================
+    // 7. DISPLAY SENSOR VALUES
+    // ==================================================
+
+    async function fetchLiveData() {
+
+      try {
+
+        const response = await fetch(ESP32_URL);
+
+        if (!response.ok) {
+          throw new Error("ESP32 response error");
+        }
+
+        const d = await response.json();
+
+
+        // ------------------------------------------
+        // CHECK CONNECTIONS
+        // ------------------------------------------
+
+        if (d.connected !== true) {
+          throw new Error("ESP32 Wi-Fi disconnected");
+        }
+
+
+        // ------------------------------------------
+        // UPDATE RELAY STATUS (ADDED)
+        // Runs even if Uno data is unavailable.
+        // ------------------------------------------
+
+        document.getElementById("relay-state").innerText =
+          d.relay_state ? "ON" : "OFF";
+
+        document.getElementById("relay-mode").innerText =
+          d.relay_control_mode || "AUTO";
+
+
+        // ------------------------------------------
+        // CHECK ARDUINO SERIAL DATA
+        // ------------------------------------------
+
+        if (d.serial_ok !== true) {
+
+          document.getElementById("connection-status").innerText =
+            `⚠️ ESP32 connected (${ESP32_IP}), waiting for Arduino data`;
+
+          document.getElementById("connection-status").className =
+            "searching";
+
+          document.getElementById("sys-mode").innerText =
+            d.mode || "NO DATA";
+
+          document.getElementById("rec-text").innerText =
+            d.recommendation || "Check Arduino connection";
+
+          return;
+        }
+
+
+        // ------------------------------------------
+        // SOLAR PV ARRAY
+        // ------------------------------------------
+
+        document.getElementById("solar-voltage").innerText =
+          Number(d.solar_v).toFixed(2) + " V";
+
+        document.getElementById("solar-current").innerText =
+          Number(d.solar_a).toFixed(3) + " A";
+
+        document.getElementById("solar-power").innerText =
+          Number(d.solar_w).toFixed(2) + " W";
+
+
+        // ------------------------------------------
+        // BATTERY
+        // ------------------------------------------
+
+        document.getElementById("bat-voltage").innerText =
+          Number(d.bat_v).toFixed(2) + " V";
+
+        // This is solar-panel current, not measured
+        // battery charging current.
+
+        document.getElementById("charge-current").innerText =
+          Number(d.solar_a).toFixed(3) + " A";
+
+        // Temperature has not been calibrated.
+
+        document.getElementById("bat-temp").innerText =
+          d.bat_temp === null || d.bat_temp === undefined
+            ? "Not calibrated"
+            : Number(d.bat_temp).toFixed(1) + " °C";
+
+
+        // ------------------------------------------
+        // MAIN LOAD
+        // ------------------------------------------
+
+        document.getElementById("load-voltage").innerText =
+          Number(d.load_v).toFixed(2) + " V";
+
+        document.getElementById("load-current").innerText =
+          Number(d.load_a).toFixed(3) + " A";
+
+        document.getElementById("load-power").innerText =
+          Number(d.load_w).toFixed(2) + " W";
+
+
+        // ------------------------------------------
+        // SYSTEM STATUS
+        // ------------------------------------------
+
+        document.getElementById("sys-mode").innerText =
+          d.mode || "UNKNOWN";
+
+        document.getElementById("rec-text").innerText =
+          d.recommendation || "No recommendation available";
+
+
+        // ------------------------------------------
+        // CONNECTION STATUS
+        // ------------------------------------------
+
+        document.getElementById("connection-status").innerText =
+          `✅ ESP32 and Arduino connected - ${ESP32_IP}`;
+
+        document.getElementById("connection-status").className =
+          "connected";
+
+      } catch (error) {
+
+        console.error("ESP32 connection error:", error);
+
+        document.getElementById("connection-status").innerText =
+          "❌ Disconnected";
+
+        document.getElementById("connection-status").className =
+          "disconnected";
+
+        clearInterval(refreshInterval);
+
+        refreshInterval = null;
+
+        logMessage("❌ Connection lost.", true);
+
+        if (!reconnectTimeout) {
+
+          reconnectTimeout = setTimeout(() => {
+
+            reconnectTimeout = null;
+
+            discoverESP32();
+
+          }, 5000);
+        }
+      }
+    }
+
+
+    // ==================================================
+    // 8. ENTER KEY LOGIN
+    // ==================================================
+
+    document.getElementById("pin-input").addEventListener(
+      "keypress",
+      (e) => {
+        if (e.key === "Enter") {
+          validatePIN();
+        }
+      }
+    );
+
   </script>
+
 </body>
 </html>
+
