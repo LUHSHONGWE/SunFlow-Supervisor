@@ -1,4 +1,4 @@
-# SunFlow-Supervisor: PV Supervisory Dashbo
+# SunFlow-Supervisor: PV Supervisory Dashboard
  Optimizing Battery Charging while Maximizing load power utilisation.
 
 An embedded supervisory control system designed to optimize battery charging, estimate State of Charge (SOC), and maximize Photovoltaic (PV) energy utilization under varying load conditions. 
