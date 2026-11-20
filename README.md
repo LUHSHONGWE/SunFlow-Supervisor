@@ -1,51 +1,96 @@
-# OptiCharge-Sync: PV Supervisory Dashbo
+# SunFlow-Supervisor: PV Supervisory Dashbo
  Optimizing Battery Charging while Maximizing load power utilisation.
 
 An embedded supervisory control system designed to optimize battery charging, estimate State of Charge (SOC), and maximize Photovoltaic (PV) energy utilization under varying load conditions. 
 
-## 📖 Project Overview
-Conventional Maximum Power Point Tracking (MPPT) systems extract maximum instantaneous power from a solar array, but often ignore the electrochemical limits of the battery and fluctuating load demands. This results in inefficient energy utilization and accelerated battery degradation. 
+📖 Project Overview
+Conventional Maximum Power Point Tracking (MPPT) systems are designed to extract maximum instantaneous power from a solar array. However, they often operate blindly—ignoring the electrochemical limits of the battery and the fluctuating demands of the connected load. This mismatch results in inefficient energy utilization, accelerated battery degradation, and potential thermal runaway.
 
-**SunFlow Supervisor** acts as an intelligent layer above standard MPPT hardware. It utilizes a dual-microcontroller architecture (Arduino Nano + ESP32) to monitor the PV source, battery health, and load demand in real-time. The system enforces a "Battery-Health-First" strategy, dynamically routing excess PV power to a secondary load (Auxiliary Load) and providing actionable feedback via a custom web dashboard.
+OptiCharge-Sync (formerly SunFlow Supervisor) is an embedded supervisory control system designed to solve this problem. It acts as an intelligent "brain" sitting above standard MPPT hardware. Utilizing a dual-microcontroller architecture, the system monitors the PV source, battery health, and load demand in real-time. It enforces a Battery-Health-First strategy, dynamically routing excess PV power to an auxiliary load via relay switching, and provides actionable feedback through a custom, locally hosted web dashboard.
 
-## ⚙️ System Architecture & Hardware
-*   **Data Acquisition:** Arduino Nano (ATmega328P)
-*   **Web Dashboard & Visualization:** ESP32 (Wi-Fi enabled)
-*   **Power Stage (Charging):** BDD DC/DC Buck/MPPT Solar Charging Module (5A)
-*   **Power Stage (Load):** XL4015 DC-DC Buck Converter (Stepping down to a stable 12V)
-*   **Energy Storage:** 4S Lithium-Ion Battery Pack (14.8V Nominal) with 15A BMS
-*   **Sensors:**
-    *   3x 0-25V Voltage Sensors (Solar Input, Main Load Output, Battery SOC Estimation)
-    *   2x ACS712 Hall-Effect Current Sensors (Solar Input, Main Load)
-    *   1x 10k NTC Thermistor (Battery Thermal Monitoring)
-*   **Switching:** 5V SPDT Relay Module (Hardware Power Routing)
+🔗 Live Dashboard UI (Web Showcase)
+View the Web UI: https://luhshongwe.github.io/SunFlow-Supervisor/
 
-## 🚀 Key Engineering Features
-*   **Fractional Open-Circuit Voltage (FOCV) Advisory:** Calculates the optimal MPP setpoint (\(V_{mpp} = 0.76 \times V_{oc}\)) and displays recommendations to the user for manual MPPT tuning, bypassing the need for expensive digital potentiometers.
-*   **Battery State of Charge (SOC) Estimation:** Utilizes a dedicated voltage sensor to monitor the battery bus. The system maps the measured voltage against a 4S Lithium charge curve to estimate the SOC percentage.
-*   **Intelligent Load Routing (Hysteresis Control):** Uses a relay to route power between the Main Load and an Auxiliary Load. When the battery reaches a safe charging threshold (e.g., >16.5V) and solar is available, excess energy is diverted to the Aux load. Hysteresis logic prevents rapid relay chattering during voltage sag.
-*   **Thermal Protection:** Monitors battery temperature. If the temperature exceeds safe limits (>45°C), the system recommends terminating the charge to prevent thermal runaway.
-*   **Real-Time Web Dashboard:** An ESP32-hosted web interface displays live graphs of Solar Power, Load Power, Battery Voltage, SOC, and Current Operating Mode.
+Access PIN: 1234
+(Note: Because the live hardware telemetry requires a local connection to the ESP32, this link serves as a front-end UI/UX showcase. Use the PIN to bypass the security lockout and view the dashboard interface).
 
-## 🧠 Supervisory Logic Flow
-1.  **Normal Mode:** Battery is charging. The relay is in the Normally Closed (NC) state, powering the primary 12V load via the buck converter.
-2.  **Excess Power Mode:** When the battery hits the full-voltage threshold and the sun is out, the system switches to the Normally Open (NO) contact, routing excess solar energy to the auxiliary load.
-3.  **Protection Mode:** If thermal limits are breached, a visual warning is displayed on the dashboard, prompting the user to manually disconnect the charging path.
+🔬 The Engineering Problem & Methodology
+The Problem: Standard MPPT systems treat the solar panel, battery, and load as independent entities. When the battery is full, MPPT systems continue pushing voltage, causing overcharging. When the load demands more power than the sun provides, the system lacks intelligent load prioritization.
 
-## 📂 Repository Structure
-*   `/Arduino_Nano`: Contains the core C++ firmware for sensor polling, SOC calculation, and relay logic.
-*   `/ESP32_Dashboard`: Contains the ESP32 code for UART data parsing and the Web UI (HTML/CSS/JS embedded).
-*   `/Documentation`: Circuit schematics, block diagrams, and the final research article.
-*   `LICENSE`: MIT License.
+The Solution:
 
-## 🛠️ Installation & Setup
-1.  **Hardware Wiring:** Refer to the `Documentation/Circuit_Diagram.pdf`. Ensure all sensors share a common ground.
-2.  **Calibration:** On startup, ensure zero current is flowing through the ACS712 sensors for auto-calibration.
-3.  **Firmware Upload:** Upload the Arduino Nano code first, then the ESP32 code. Ensure the RX/TX pins are crossed and grounded correctly.
-4.  **Power Up:** Connect the battery (via BMS) and verify the ESP32 dashboard is receiving serial data.
+Data Acquisition: An Arduino Uno polls 3 voltage sensors (Solar, Battery, Load), 2 ACS712 current sensors (Charge, Load), and a 10k NTC thermistor. It calculates real-time power and transmits the data via UART.
 
-## 🔮 Future Improvements
-*   **Automated MPPT:** Replace the manual potentiometer on the BDD module with a high-voltage digital potentiometer (e.g., MCP41HV51) to allow the Arduino to adjust the MPP automatically via SPI.
-*   **Advanced SOC Estimation:** Implement a coulomb-counting method using the current sensor for more accurate SOC tracking than voltage-based estimation.
-*   **PCB Design:** Migrate the breadboard prototype to a custom PCB to reduce electrical noise and improve reliability.
+Supervisory Logic: An ESP32 receives the telemetry, applies hysteresis logic (to prevent relay chattering), and manages the safety thresholds (Thermal and SOC limits).
 
+Hardware Routing: Based on the ESP32's logic, a 5V SPDT relay physically switches power. By default, power flows to the Main 12V Load (Normally Closed). When the battery hits the full-charge threshold (>16.5V), the ESP32 triggers the relay to switch power to the Auxiliary Pool Pump Load (Normally Open), maximizing PV utilization.
+
+Web Visualization: The ESP32 hosts a local asynchronous web server, displaying live JSON data on a responsive dashboard.
+
+⚙️ System Architecture & Hardware Stack
+Component	Specification	Role
+Data Acquisition	Arduino Uno (ATmega328P)	Sensor polling, ADC conversion, power calculation
+Web Server & Logic	ESP32 (Wi-Fi enabled)	UART parsing, Supervisory logic, Relay control, HTML hosting
+Charging Stage	BDD DC/DC Buck/MPPT Solar Module (5A)	Steps down 21V Solar to charge the 4S Battery
+Load Stage	XL4015 DC-DC Buck Converter	Steps down fluctuating battery voltage to a stable 12V
+Energy Storage	4S Lithium-Ion Pack (14.8V Nominal)	Power storage with 15A BMS for cell protection
+Sensors	3x 0-25V Voltage Divider, 2x ACS712 (20A), 1x 10k NTC	Telemetry and thermal monitoring
+Switching	5V SPDT Relay Module	Hardware power routing (NC to NO)
+🚀 Key Engineering Features
+Fractional Open-Circuit Voltage (FOCV) Advisory: Because the MPPT module uses manual potentiometers, the dashboard calculates the optimal MPP setpoint (
+V
+m
+p
+p
+=
+0.76
+×
+V
+o
+c
+V 
+mpp
+​
+ =0.76×V 
+oc
+​
+ ) and gives the user real-time recommendations to adjust the hardware.
+
+Intelligent Relay Routing (Hysteresis Control): The ESP32 switches the relay to the Aux Load when the battery is full. It utilizes hysteresis logic: it only switches back to the main load when the battery drops below 14.0V, preventing rapid relay clicking.
+
+Web-Based Relay Override: The web dashboard includes a manual override button allowing the user to force the relay to switch to the Aux Load, bypassing automatic FOCV logic for testing.
+
+Thermal Protection: If the NTC thermistor detects a battery temperature exceeding 45°C, the system enters "PROTECT" mode and cuts the charge path.
+
+Security Lockout: The web dashboard features a PIN-protected login screen with a 3-attempt lockout (30-second timeout) to prevent unauthorized access.
+
+CORS-Bypassed Local Server: The ESP32 is configured with Access-Control-Allow-Origin: * to allow secure cross-origin communication between the hardware and web clients.
+
+📂 Repository Structure
+/Arduino_Sensors: C++ firmware for the Arduino Uno (Sensor calibration, ADC polling, UART transmission).
+
+/ESP32_Supervisor: C++ firmware for the ESP32 (UART RX, Logic control, Relay switching, Async Web Server).
+
+/Web_Dashboard: Contains the standalone index.html file for the GitHub Pages showcase.
+
+/Documentation: Circuit schematics, block diagrams, and final research paper.
+
+🛠️ Installation & Setup (For Local Hardware)
+Hardware Wiring: Ensure all sensors and microcontrollers share a common ground. The Arduino TX (Pin 1) must connect to the ESP32 RX2 (GPIO 16).
+
+Calibration: Power up the system with zero current flowing through the ACS712 sensors. The Arduino auto-calibrates the zero-offset voltage in setup().
+
+Firmware Upload: Upload the Arduino code first, then the ESP32 code.
+
+Network Connection: The ESP32 will connect to the designated Wi-Fi hotspot and print its local IP address to the Serial Monitor (115200 baud). Type this IP into your browser to view the dashboard.
+
+🔮 Future Improvements & Roadmap
+If I were to continue developing this project, the next engineering phases would include:
+
+Automated MPPT Tracking: Replace the manual potentiometer on the BDD module with a digital potentiometer (e.g., MCP41HV51) to allow the ESP32 to automatically adjust the MPP via SPI, eliminating the need for human intervention.
+
+Advanced SOC Estimation: Transition from voltage-based SOC estimation to a Coulomb-counting method using the charge current sensor, providing far more accurate battery tracking.
+
+Cloud Integration: Implement MQTT or WebSockets to push data to a cloud service (like AWS IoT or ThingSpeak), allowing users to monitor their solar array from anywhere in the world, not just the local Wi-Fi network.
+
+PCB Fabrication: Migrate the prototype from breadboards to a custom 2-layer PCB to eliminate parasitic capacitance, electrical noise, and loose jumper wires.
